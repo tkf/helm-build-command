@@ -59,7 +59,8 @@ DIRECTORY and return the result as a string or nil if not found.
 
 \(fn task choice)")
 
-(defvar hbc--get-current-source #'helm-get-current-source)
+(defvar hbc--get-current-source #'helm-get-current-source
+  "`helm-get-current-source' or `anything-get-current-source'")
 
 (defun hbc-source--action (choice)
   (let* ((source (funcall hbc--get-current-source))
@@ -114,6 +115,7 @@ DIRECTORY and return the result as a string or nil if not found.
         collect s))
 
 (defmethod hbc-candidates ((task hbc-command-make))
+  "Return a list of candidates that can be run on the task directory."
   (when (slot-boundp task :directory)
     (mapcar (lambda (x) (format (oref task :command-format) x))
             (hbc-list-targets task))))
