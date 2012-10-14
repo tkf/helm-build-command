@@ -171,7 +171,10 @@ Command tasks to be included can be configured by `hbc-task-classes'."
   (mapcar
    (lambda (class)
      (let ((task (make-instance class)))
-       `((name . ,(format "Build command (%s)" (oref task :name)))
+       `((name . ,(format "Build command (%s) at %s"
+                          (oref task :name)
+                          (when (slot-boundp task :directory)
+                            (oref task :directory))))
          (hbc-task . ,task)
          (candidates . hbc-source--candidates)
          (action . hbc-source--action))))
