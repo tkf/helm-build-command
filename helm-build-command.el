@@ -39,10 +39,13 @@
 
 (defmethod initialize-instance ((task hbc-command-make) &optional slots)
   (call-next-method)
-  (hbc-find-directory task))
+  (let ((directory (hbc-find-directory task)))
+    (when directory
+      (oset task :directory directory))))
 
 (defgeneric hbc-find-directory (task directory)
-  "Find a base directory to run.
+  "Find a directory to run this TASK on.  Start search from
+DIRECTORY and return the result as a string or nil if not found.
 
 \(fn task directory)")
 
@@ -96,10 +99,8 @@
 
 (defmethod hbc-find-directory ((task hbc-command-make) &optional start)
   "Find a parent directory in which Makefile exists."
-  (unless start (setq start default-directory))
-  (let ((directory (helm-build-command--find-makefile
-                    :start start :makefile (oref task :makefile))))
-    (oset task :directory directory)))
+  (helm-build-command--find-makefile
+   :start (or start default-directory) :makefile (oref task :makefile)))
 
 (defmethod hbc-list-targets ((task hbc-command-make))
   "List make target."
