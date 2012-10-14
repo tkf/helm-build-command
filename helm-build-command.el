@@ -66,7 +66,7 @@ DIRECTORY and return the result as a string or nil if not found.
 (eval-after-load "anything"
   '(setq hbc--get-current-source #'anything-get-current-source))
 ;; automatically set the default value of `hbc--get-current-source' so
-;; that user can mix `hbc-get-sources' other sources.
+;; that user can mix `hbc-get-sources' and other sources.
 
 (defun hbc-source--action (choice)
   (let* ((source (funcall hbc--get-current-source))
