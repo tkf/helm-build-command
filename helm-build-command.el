@@ -37,7 +37,7 @@
    (directory :initarg :directory :type string))
   :documentation "Base command task class.")
 
-(defmethod initialize-instance ((task hbc-command-make) &optional slots)
+(defmethod initialize-instance ((task hbc-command-base) &optional slots)
   (call-next-method)
   (let ((directory (hbc-find-directory task)))
     (when directory
