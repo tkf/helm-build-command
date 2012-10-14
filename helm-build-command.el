@@ -140,6 +140,9 @@ DIRECTORY and return the result as a string or nil if not found.
 
 ;;; Helm/anything commands
 
+(defvar hbc-task-classes '(hbc-command-make hbc-command-setup-py)
+  "A list of command task classes (list of symbols).")
+
 (defun helm-build-command-sources ()
   "Return a list of helm/anything sources."
   (mapcar
@@ -149,7 +152,7 @@ DIRECTORY and return the result as a string or nil if not found.
          (hbc-task . ,task)
          (candidates . hbc-source--candidates)
          (action . hbc-source--action))))
-   '(hbc-command-make hbc-command-setup-py)))
+   hbc-task-classes))
 
 (defun* helm-build-command--internal (&optional (helm-or-anything "helm"))
   "Do what `helm-build-command' should do."
