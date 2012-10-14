@@ -148,21 +148,22 @@ DIRECTORY and return the result as a string or nil if not found.
 
 ;;; tox task
 
-(defclass hbc-command-setup-py (hbc-command-make)
+(defclass hbc-command-tox (hbc-command-make)
   ((name :initarg :name :initform "tox.ini" :type string)
    (makefile :initarg :makefile :type string :initform "tox.ini")
    (command-format :initarg :command-format :type string
                    :initform "tox %s"))
   :documentation "Command task to run tox.")
 
-(defmethod hbc-list-targets ((task hbc-command-setup-py))
+(defmethod hbc-list-targets ((task hbc-command-tox))
   "List make target."
   (list "" "--showconfig" "--notest"))
 
 
 ;;; Helm/anything commands
 
-(defvar hbc-task-classes '(hbc-command-make hbc-command-setup-py)
+(defvar hbc-task-classes
+  '(hbc-command-make hbc-command-setup-py hbc-command-tox)
   "A list of command task classes (list of symbols).")
 
 (defun hbc-get-sources ()
