@@ -62,6 +62,12 @@ DIRECTORY and return the result as a string or nil if not found.
 (defvar hbc--get-current-source #'helm-get-current-source
   "`helm-get-current-source' or `anything-get-current-source'")
 
+;;;###autoload
+(eval-after-load "anything"
+  '(setq hbc--get-current-source #'anything-get-current-source))
+;; automatically set the default value of `hbc--get-current-source' so
+;; that user can mix `helm-build-command-sources' other sources.
+
 (defun hbc-source--action (choice)
   (let* ((source (funcall hbc--get-current-source))
          (task (assoc-default 'hbc-task source)))
