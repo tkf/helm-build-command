@@ -87,10 +87,10 @@ DIRECTORY and return the result as a string or nil if not found.
   (loop with dir = (file-name-as-directory (expand-file-name start))
         with prev = ""
         while (not (string= dir prev))
-        do (setq prev dir
-                 dir (file-name-directory (directory-file-name dir)))
         when (file-exists-p (expand-file-name makefile dir))
-        return dir))
+        return dir
+        do (setq prev dir
+                 dir (file-name-directory (directory-file-name dir)))))
 
 
 ;;; Makefile task
