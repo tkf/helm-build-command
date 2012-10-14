@@ -66,7 +66,7 @@ DIRECTORY and return the result as a string or nil if not found.
 (eval-after-load "anything"
   '(setq hbc--get-current-source #'anything-get-current-source))
 ;; automatically set the default value of `hbc--get-current-source' so
-;; that user can mix `helm-build-command-sources' other sources.
+;; that user can mix `hbc-get-sources' other sources.
 
 (defun hbc-source--action (choice)
   (let* ((source (funcall hbc--get-current-source))
@@ -165,8 +165,9 @@ DIRECTORY and return the result as a string or nil if not found.
 (defvar hbc-task-classes '(hbc-command-make hbc-command-setup-py)
   "A list of command task classes (list of symbols).")
 
-(defun helm-build-command-sources ()
-  "Return a list of helm/anything sources."
+(defun hbc-get-sources ()
+  "Return a list of helm/anything sources for command tasks.
+Command tasks to be included can be configured by `hbc-task-classes'."
   (mapcar
    (lambda (class)
      (let ((task (make-instance class)))
@@ -183,7 +184,7 @@ DIRECTORY and return the result as a string or nil if not found.
         (buf (format "*%s build*" helm-or-anything))
         (hbc--get-current-source
          (intern (format "%s-get-current-source" helm-or-anything))))
-    (funcall func (helm-build-command-sources) buf)))
+    (funcall func (hbc-get-sources) buf)))
 
 ;;;###autoload
 (defun anything-build-command ()
