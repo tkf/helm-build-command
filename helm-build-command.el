@@ -86,7 +86,7 @@ DIRECTORY and return the result as a string or nil if not found.
         return dir))
 
 
-;;; Makefile
+;;; Makefile task
 
 (defclass hbc-command-make (hbc-command-base)
   ((name :initarg :name :initform "make" :type string)
@@ -123,6 +123,23 @@ DIRECTORY and return the result as a string or nil if not found.
   (let ((default-directory (oref task :directory)))
     (compile choice)))
 
+
+;;; setup.py task
+
+(defclass hbc-command-setup-py (hbc-command-make)
+  ((name :initarg :name :initform "setup.py" :type string)
+   (makefile :initarg :makefile :type string :initform "setup.py")
+   (command-format :initarg :command-format :type string
+    :initform "python setup.py %s"))
+  :documentation "Command task to run setup.py")
+
+(defmethod hbc-list-targets ((task hbc-command-setup-py))
+  "List make target."
+  (list "build" "build_ext" "build_ext --inplace" "clean"))
+
+
+;;; Helm/anything commands
+
 (defun helm-build-command-sources ()
   "Return a list of helm/anything sources."
   (mapcar
@@ -132,7 +149,7 @@ DIRECTORY and return the result as a string or nil if not found.
          (hbc-task . ,task)
          (candidates . hbc-source--candidates)
          (action . hbc-source--action))))
-   '(hbc-command-make)))
+   '(hbc-command-make hbc-command-setup-py)))
 
 (defun* helm-build-command--internal (&optional (helm-or-anything "helm"))
   "Do what `helm-build-command' should do."
