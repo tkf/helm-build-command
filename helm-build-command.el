@@ -27,21 +27,49 @@
 ;;; Code:
 
 (eval-when-compile (require 'cl))
+(require 'eieio)
 
+
+;;; Interface
 
-(defvar helm-build-command-make-exclude
-  "Makefile"
-  "Regexp to match against Makefile targets to be excluded.")
+(defclass hbc-command-base ()
+  ((name :initarg :name :type string)
+   (directory :initarg :directory :type string))
+  :documentation "Base command task class.")
 
-(defun helm-build-command-list-make-targets ()
-  "List make target. A Makefile must exist under `default-directory'."
-  (loop for s in
-        (split-string
-         (shell-command-to-string
-          "make -pn | sed -n '/^[a-zA-Z][a-zA-Z.-]*:.*/p' | cut -d: -f1")
-         "\n" t)
-        unless (string-match-p helm-build-command-make-exclude s)
-        collect s))
+(defmethod initialize-instance ((task hbc-command-make) &optional slots)
+  (call-next-method)
+  (hbc-find-directory task))
+
+(defgeneric hbc-find-directory (task directory)
+  "Find a base directory to run.
+
+\(fn task directory)")
+
+(defgeneric hbc-candidates (task)
+  "Return a list of candidates.
+
+\(fn task)")
+
+(defgeneric hbc-run (task choice)
+  "Run command.
+
+\(fn task choice)")
+
+(defvar hbc--get-current-source #'helm-get-current-source)
+
+(defun hbc-source--action (choice)
+  (let* ((source (funcall hbc--get-current-source))
+         (task (assoc-default 'hbc-task source)))
+    (hbc-run choice)))
+
+(defun hbc-source--candidates ()
+  (let* ((source (funcall hbc--get-current-source))
+         (task (assoc-default 'hbc-task source)))
+    (hbc-candidates task)))
+
+
+;;; Utilities
 
 (defun* helm-build-command--find-makefile
     (&key (start default-directory) (makefile "Makefile"))
@@ -54,37 +82,65 @@
         when (file-exists-p (expand-file-name makefile dir))
         return dir))
 
-(defvar helm-build-command-make--directory nil
-  "Bound to result of `helm-build-command--find-makefile' while
-running helm/anything.")
+
+;;; Makefile
 
-(defun helm-build-command-make--candidates ()
-  "List make targets. `helm-build-command-make--directory' must be bound."
-  (let ((default-directory helm-build-command-make--directory))
-    (when default-directory
-      (mapcar (lambda (x) (format "make %s" x))
-              (helm-build-command-list-make-targets)))))
+(defclass hbc-command-make (hbc-command-base)
+  ((name :initarg :name :initform "make" :type string)
+   (makefile :initarg :makefile :type string)
+   (command-format :initarg :command-format :type string :initform "make %s")
+   (exclude
+    :initarg :exclude :type string :initform "Makefile"
+    :documentation "Regexp to match against Makefile targets to be excluded."))
+  :documentation "Command task to run Makefile")
 
-(defun helm-build-command-make--compile (command)
-  "Run `compile' with COMMAND. `helm-build-command-make--directory'
-must be bound."
-  (let ((default-directory helm-build-command-make--directory))
-    (compile command)))
+(defmethod hbc-find-directory ((task hbc-command-make) &optional start)
+  "Find a parent directory in which Makefile exists."
+  (unless start (setq start default-directory))
+  (let ((directory (helm-build-command--find-makefile
+                    :start start :makefile (oref task :makefile))))
+    (oset task :directory directory)))
 
-(defvar helm-build-command-make-source
-  '((name . "Build command (make)")
-    (candidates . helm-build-command-make--candidates)
-    (action . helm-build-command-make--compile)))
+(defmethod hbc-list-targets ((task hbc-command-make))
+  "List make target."
+  (loop for s in
+        (split-string
+         (let ((default-directory (oref task :directory)))
+           (shell-command-to-string
+            "make -pn | sed -n '/^[a-zA-Z][a-zA-Z.-]*:.*/p' | cut -d: -f1"))
+         "\n" t)
+        unless (string-match-p (oref task :exclude) s)
+        collect s))
+
+(defmethod hbc-candidates ((task hbc-command-make))
+  (when (slot-boundp task :directory)
+    (mapcar (lambda (x) (format (oref task :command-format) x))
+            (hbc-list-targets task))))
+
+(defmethod hbc-run ((task hbc-command-make) choice)
+  "Run `compile' with CHOICE as command."
+  (let ((default-directory (oref task :directory)))
+    (compile choice)))
+
+(defun helm-build-command-sources ()
+  "Return a list of helm/anything sources."
+  (mapcar
+   (lambda (class)
+     (let ((task (make-instance class)))
+       `((name . ,(format "Build command (%s)" (oref task :name)))
+         (hbc-task . ,task)
+         (candidates . hbc-source--candidates)
+         (action . hbc-source--action))))
+   '(hbc-command-make)))
 
 (defun* helm-build-command--internal (&optional (helm-or-anything "helm"))
   "Do what `helm-build-command' should do."
   (let (;; helm/anything compatibility
         (func (intern (format "%s-other-buffer" helm-or-anything)))
         (buf (format "*%s build*" helm-or-anything))
-        ;; actual setup
-        (helm-build-command-make--directory
-         (helm-build-command--find-makefile)))
-    (funcall func helm-build-command-make-source buf)))
+        (hbc--get-current-source
+         (intern (format "%s-get-current-source" helm-or-anything))))
+    (funcall func (helm-build-command-sources) buf)))
 
 ;;;###autoload
 (defun anything-build-command ()
