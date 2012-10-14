@@ -90,7 +90,7 @@ DIRECTORY and return the result as a string or nil if not found.
 
 (defclass hbc-command-make (hbc-command-base)
   ((name :initarg :name :initform "make" :type string)
-   (makefile :initarg :makefile :type string)
+   (makefile :initarg :makefile :type string :initform "Makefile")
    (command-format :initarg :command-format :type string :initform "make %s")
    (exclude
     :initarg :exclude :type string :initform "Makefile"
