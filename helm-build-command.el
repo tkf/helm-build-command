@@ -81,7 +81,7 @@ DIRECTORY and return the result as a string or nil if not found.
 
 ;;; Utilities
 
-(defun* helm-build-command--find-makefile
+(defun* hbc--find-makefile
     (&key (start default-directory) (makefile "Makefile"))
   "Find a parent directory in which MAKEFILE exists."
   (loop with dir = (file-name-as-directory (expand-file-name start))
@@ -106,7 +106,7 @@ DIRECTORY and return the result as a string or nil if not found.
 
 (defmethod hbc-find-directory ((task hbc-command-make) &optional start)
   "Find a parent directory in which Makefile exists."
-  (helm-build-command--find-makefile
+  (hbc--find-makefile
    :start (or start default-directory) :makefile (oref task :makefile)))
 
 (defmethod hbc-list-targets ((task hbc-command-make))
@@ -181,7 +181,7 @@ Command tasks to be included can be configured by `hbc-task-classes'."
          (action . hbc-source--action))))
    hbc-task-classes))
 
-(defun* helm-build-command--internal (&optional (helm-or-anything "helm"))
+(defun* hbc--helm-build-command (&optional (helm-or-anything "helm"))
   "Do what `helm-build-command' should do."
   (let (;; helm/anything compatibility
         (func (intern (format "%s-other-buffer" helm-or-anything)))
@@ -194,13 +194,13 @@ Command tasks to be included can be configured by `hbc-task-classes'."
 (defun anything-build-command ()
   "Run make command."
   (interactive)
-  (helm-build-command--internal "anything"))
+  (hbc--helm-build-command "anything"))
 
 ;;;###autoload
 (defun helm-build-command ()
   "Run make command."
   (interactive)
-  (helm-build-command--internal))
+  (hbc--helm-build-command))
 
 
 (provide 'helm-build-command)
