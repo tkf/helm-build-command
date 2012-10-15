@@ -71,7 +71,7 @@ DIRECTORY and return the result as a string or nil if not found.
 (defun hbc-source--action (choice)
   (let* ((source (funcall hbc--get-current-source))
          (task (assoc-default 'hbc-task source)))
-    (hbc-run choice)))
+    (hbc-run task choice)))
 
 (defun hbc-source--candidates ()
   (let* ((source (funcall hbc--get-current-source))
