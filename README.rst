@@ -6,7 +6,7 @@ helm-build-command.el helps you to run "build commands" such as
 prefix helm- in it, anything.el user can also use
 helm-build-command.el.
 
-It supports only ``make``, ``python setup.py``, ``tox`` now.
+It supports only ``make``, ``waf``, ``python setup.py``, ``tox`` now.
 To extend it, see the instruction below.
 
 
