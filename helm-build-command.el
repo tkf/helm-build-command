@@ -160,10 +160,25 @@ DIRECTORY and return the result as a string or nil if not found.
   (list "" "--showconfig" "--notest"))
 
 
+;;; waf task
+
+(defclass hbc-command-waf (hbc-command-make)
+  ((name :initarg :name :initform "waf" :type string)
+   (makefile :initarg :makefile :type string :initform "waf")
+   (command-format :initarg :command-format :type string
+                   :initform "./waf %s"))
+  :documentation "Command task to run waf.")
+
+(defmethod hbc-list-targets ((task hbc-command-waf))
+  "List make target."
+  (list "build" "clean" "configure" "dist" "distcheck" "distclean"
+        "install" "list" "step" "uninstall"))
+
+
 ;;; Helm/anything commands
 
 (defvar hbc-task-classes
-  '(hbc-command-make hbc-command-setup-py hbc-command-tox)
+  '(hbc-command-make hbc-command-setup-py hbc-command-tox hbc-command-waf)
   "A list of command task classes (list of symbols).")
 
 (defun hbc-get-sources ()
